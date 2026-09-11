@@ -1,0 +1,42 @@
+Correct lifecycle order after connect?	`initialize` → server response → `notifications/initialized` → normal traffic	MCPA::D2
+What rides in the `initialize` request?	protocolVersion (date string), capabilities, clientInfo	MCPA::D2
+Server's initialize response contains?	Its protocolVersion, capabilities, serverInfo, optional instructions	MCPA::D2
+Tools are controlled by ___	the model (LLM decides when to call)	MCPA::D1
+Resources are controlled by ___	the application (host attaches context)	MCPA::D1
+Prompts are controlled by ___	the user (explicitly selected)	MCPA::D1
+Who executes sampling?	The client's configured LLM, after user approval; server only requests	MCPA::D3
+Notification vs request?	Notification: no id, no reply. Request: id, must get a response	MCPA::D2
+Can a JSON-RPC response hold result AND error?	No — result XOR error	MCPA::D2
+JSON-RPC code -32601?	Method not found	MCPA::D3
+JSON-RPC code -32602?	Invalid params	MCPA::D3
+Tool ran but operation failed — what comes back?	Successful response with result.isError: true + message in content	MCPA::D3
+Current transports?	stdio (local) and Streamable HTTP (remote); HTTP+SSE deprecated	MCPA::D2
+Streamable HTTP mechanics?	POST client→server + optional SSE server→client; session via Mcp-Session-Id	MCPA::D2
+What validates tool arguments?	The tool's JSON Schema inputSchema	MCPA::D3
+Four tool annotation hints?	readOnlyHint, destructiveHint, idempotentHint, openWorldHint	MCPA::D3
+Are annotations enforceable?	No — advisory hints only; clients enforce	MCPA::D3
+Resource content shapes?	text or blob (base64), with mimeType	MCPA::D3
+Resource subscription flow?	resources/subscribe → notifications/resources/updated → client re-reads	MCPA::D3
+completion/complete is for?	Autocompleting prompt/resource-template arguments	MCPA::D3
+Cursor rules?	Opaque — pass back verbatim; never parse or construct	MCPA::D3
+Clients expose which capabilities TO servers?	Sampling, roots, elicitation handling	MCPA::D2
+Sampling flow?	sampling/createMessage (s→c) → user approval → client's model → completion back	MCPA::D3
+What are roots?	Client-declared URI boundaries; advisory, not sandboxing	MCPA::D3
+Elicitation vs sampling?	Elicitation asks the user; sampling asks the model	MCPA::D3
+Token passthrough?	Forbidden — validate audience; be your own resource server	MCPA::D4
+MCP OAuth profile?	OAuth 2.1 with mandatory PKCE; server = resource server	MCPA::D4
+RFC 9728?	Protected Resource Metadata — well-known doc naming authorization server(s)	MCPA::D4
+RFC 8707?	Resource indicators — aud-bind tokens to the specific server	MCPA::D4
+Where must tokens never appear?	URLs/query strings — they get logged; Authorization header only	MCPA::D4
+Session ID hardening?	Secure-random, validated per request (origin/auth), expire/rotate	MCPA::D4
+Rug pull (tool poisoning)?	Tool changed after approval — detect listChanged and re-consent	MCPA::D4
+Line-jumping?	Prompt injection inside tool results — treat results as untrusted data	MCPA::D4
+Confused deputy?	Authorized component tricked into misusing authority — per-audience consent/binding	MCPA::D4
+stdio trust boundary?	The local machine; stdio servers shouldn't juggle web tokens	MCPA::D4
+MCP's core value?	Conforming server runs in any MCP host; M×N integrations become M+N	MCPA::D5
+Exam domain weights?	D1 16% · D2 14% · D3 26% · D4 24% · D5 20%	MCPA::Meta
+Spec version the exam aligns to?	Release 2026-07-28 (re-diff before exam day)	MCPA::Meta
+Cert logistics?	Online proctored MCQ; 90 min (🟡120); valid 2 yrs; 12-mo window; 1 retake; money-back	MCPA::Meta
+Cancellation mechanics?	notifications/cancelled {requestId} — no ack; late results discarded	MCPA::D3
+listChanged notifications mean?	Cached list is stale — re-call */list (and re-consent if required)	MCPA::D3
+Ping usage?	`ping` request → empty result; liveness either direction	MCPA::D3
