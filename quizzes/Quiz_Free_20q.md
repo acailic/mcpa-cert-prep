@@ -19,7 +19,7 @@ D. The host rotates them on a schedule
 
 **3. (D1)** A server needs an LLM completion. What is the correct MCP pattern?
 A. Server calls the model provider API with its own key
-B. Server sends `sampling/createMessage` to the client, which runs its configured model
+B. Server asks the **client** to run the completion with the user's configured model (user approves)
 C. Server embeds a local LLM runtime
 D. Servers cannot access any LLM
 
@@ -29,11 +29,11 @@ B. Exactly one
 C. Two (primary + fallback)
 D. One per transport
 
-**5. (D2)** Immediately after the server answers the `initialize` request, what does the client send?
-A. `tools/list`
-B. `ping`
-C. `notifications/initialized`
-D. `resources/list`
+**5. (D2)** How does a client learn a server's supported protocol versions and capabilities before sending real requests?
+A. `initialize` request and wait for `notifications/initialized`
+B. `server/discover` — the server advertises versions, capabilities, and identity
+C. `ping` and read the response headers
+D. It can't — capabilities only appear in error responses
 
 **6. (D2)** Which transport fits a server launched as a local subprocess?
 A. Streamable HTTP with OAuth
@@ -71,11 +71,12 @@ B. Cache it permanently across sessions
 C. Pass it back verbatim in the next request
 D. Decompress it into a page index
 
-**12. (D3)** Which method does a server use to get structured input from the **user** mid-flow? (🟡 newer spec)
-A. `sampling/createMessage`
-B. `elicitation/create`
-C. `roots/list`
-D. `completion/complete`
+**12. (D3)** A server needs structured input from the **user** mid-flow (spec 2026-07-28). What happens?
+A. Server sends a standalone `elicitation/create` request to the client
+B. Server returns `resultType: "input_required"` with `inputRequests`; the client answers via
+   `inputResponses` on a retry of the same request
+C. Server sends `sampling/createMessage` and waits
+D. Server calls `completion/complete` with an elicitation schema
 
 **13. (D4)** An MCP server receives the client's API token and forwards it unchanged to a third-party API. This pattern is:
 A. Acceptable if the token is short-lived
@@ -133,16 +134,16 @@ D. Teams need governed, auditable access to enterprise data via agents
 |---|---|---|
 | 1 | B | MCP standardizes AI-app↔tool/data connectivity: M×N integrations become M+N. |
 | 2 | C | Prompts are **user-controlled** (tools=model, resources=application). |
-| 3 | B | Sampling is delegated: server requests, **client's** model executes, user approves. |
+| 3 | B | Sampling is delegated: server asks, **client's** model executes, user approves (feature deprecated 2026-07-28, concept still examinable; delivery now via MRTR). |
 | 4 | B | 1 client = 1 server; the host fans out to many clients. |
-| 5 | C | Handshake completes with `notifications/initialized` before any normal request. |
+| 5 | B | `server/discover` (2026-07-28). The initialize/`notifications/initialized` flow in option A is the removed pre-rewrite handshake — the pack's favorite legacy distractor. |
 | 6 | B | Local subprocess → stdio (trusted machine boundary). |
 | 7 | B | Business failure = success envelope with `isError: true`; `-32603` is for internal protocol errors. |
 | 8 | C | `listChanged` invalidates the cache; re-list (and re-consent where required). |
 | 9 | B | Annotations are hints, not enforcement. |
 | 10 | B | Cancellation is a notification: no ack, no error; late results discarded. |
 | 11 | C | Cursors are opaque — return verbatim. |
-| 12 | B | Elicitation asks the user; sampling asks the model. |
+| 12 | B | MRTR (2026-07-28): `InputRequiredResult` + `inputRequests`; answers return as `inputResponses` on the retried request. Option A is the removed standalone-request form — legacy distractor. |
 | 13 | B | Token passthrough is forbidden; bind tokens by audience, act as resource server. |
 | 14 | B | PKCE stops authorization-code interception (public clients). |
 | 15 | A | Post-approval tool change = rug pull; re-consent on changes. |

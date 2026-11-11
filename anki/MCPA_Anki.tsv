@@ -1,6 +1,10 @@
-Correct lifecycle order after connect?	`initialize` → server response → `notifications/initialized` → normal traffic	MCPA::D2
-What rides in the `initialize` request?	protocolVersion (date string), capabilities, clientInfo	MCPA::D2
-Server's initialize response contains?	Its protocolVersion, capabilities, serverInfo, optional instructions	MCPA::D2
+Is there a handshake in current MCP?	No — initialize/notifications/initialized removed in 2026-07-28; every request carries _meta protocolVersion + clientCapabilities	MCPA::D2
+server/discover is for?	Learning a server's supported protocol versions, capabilities, identity up front (servers MUST implement)	MCPA::D2
+Protocol version mismatch result?	UnsupportedProtocolVersionError (spec code -32022)	MCPA::D2
+2026-07-28 rewrite removed what?	Sessions/Mcp-Session-Id, initialize handshake, ping, logging/setLevel, batching, stream resumability	MCPA::D2
+2026-07-28 deprecated what?	Roots, Sampling, Logging features; HTTP+SSE transport; OAuth DCR (≥12-month window)	MCPA::D2
+MRTR flow?	Server returns InputRequiredResult (resultType "input_required", inputRequests) → client retries same request with inputResponses	MCPA::D3
+resultType values?	"complete" or "input_required"; missing field (older servers) = "complete"	MCPA::D3
 Tools are controlled by ___	the model (LLM decides when to call)	MCPA::D1
 Resources are controlled by ___	the application (host attaches context)	MCPA::D1
 Prompts are controlled by ___	the user (explicitly selected)	MCPA::D1
@@ -8,27 +12,30 @@ Who executes sampling?	The client's configured LLM, after user approval; server 
 Notification vs request?	Notification: no id, no reply. Request: id, must get a response	MCPA::D2
 Can a JSON-RPC response hold result AND error?	No — result XOR error	MCPA::D2
 JSON-RPC code -32601?	Method not found	MCPA::D3
-JSON-RPC code -32602?	Invalid params	MCPA::D3
+JSON-RPC code -32602?	Invalid params (also new resource-not-found code)	MCPA::D3
+Spec-reserved error slice?	-32020…-32099 (HeaderMismatch -32020, MissingRequiredClientCapability -32021, UnsupportedProtocolVersion -32022)	MCPA::D3
 Tool ran but operation failed — what comes back?	Successful response with result.isError: true + message in content	MCPA::D3
 Current transports?	stdio (local) and Streamable HTTP (remote); HTTP+SSE deprecated	MCPA::D2
-Streamable HTTP mechanics?	POST client→server + optional SSE server→client; session via Mcp-Session-Id	MCPA::D2
+Streamable HTTP mechanics?	POST client→server + optional SSE server→client; headers Mcp-Method/Mcp-Name; no sessions, no resumability — re-issue with new request ID	MCPA::D2
 What validates tool arguments?	The tool's JSON Schema inputSchema	MCPA::D3
 Four tool annotation hints?	readOnlyHint, destructiveHint, idempotentHint, openWorldHint	MCPA::D3
 Are annotations enforceable?	No — advisory hints only; clients enforce	MCPA::D3
 Resource content shapes?	text or blob (base64), with mimeType	MCPA::D3
-Resource subscription flow?	resources/subscribe → notifications/resources/updated → client re-reads	MCPA::D3
+Resource subscription flow (2026-07-28)?	subscriptions/listen — one long-lived opt-in stream; old resources/subscribe removed	MCPA::D3
 completion/complete is for?	Autocompleting prompt/resource-template arguments	MCPA::D3
 Cursor rules?	Opaque — pass back verbatim; never parse or construct	MCPA::D3
-Clients expose which capabilities TO servers?	Sampling, roots, elicitation handling	MCPA::D2
-Sampling flow?	sampling/createMessage (s→c) → user approval → client's model → completion back	MCPA::D3
-What are roots?	Client-declared URI boundaries; advisory, not sandboxing	MCPA::D3
+Clients expose which capabilities TO servers?	Sampling, roots, elicitation handling (all deprecated 2026-07-28; via MRTR)	MCPA::D2
+Do servers send standalone s→c requests still?	No — sampling/createMessage, roots/list, elicitation/create replaced by MRTR; legacy distractors	MCPA::D3
+What are roots?	Client-declared URI boundaries; advisory, not sandboxing. Deprecated	MCPA::D3
 Elicitation vs sampling?	Elicitation asks the user; sampling asks the model	MCPA::D3
+Tasks live where since 2026-07-28?	Extension io.modelcontextprotocol/tasks — poll tasks/get, input via tasks/update, no tasks/list, no blocking tasks/result	MCPA::D3
 Token passthrough?	Forbidden — validate audience; be your own resource server	MCPA::D4
 MCP OAuth profile?	OAuth 2.1 with mandatory PKCE; server = resource server	MCPA::D4
+Preferred client registration (2026-07-28)?	Client ID Metadata Documents; OAuth DCR (RFC 7591) deprecated	MCPA::D4
 RFC 9728?	Protected Resource Metadata — well-known doc naming authorization server(s)	MCPA::D4
 RFC 8707?	Resource indicators — aud-bind tokens to the specific server	MCPA::D4
 Where must tokens never appear?	URLs/query strings — they get logged; Authorization header only	MCPA::D4
-Session ID hardening?	Secure-random, validated per request (origin/auth), expire/rotate	MCPA::D4
+Session/handle hardening?	Protocol sessions removed; harden server-minted handles: secure-random, validated per request, expire	MCPA::D4
 Rug pull (tool poisoning)?	Tool changed after approval — detect listChanged and re-consent	MCPA::D4
 Line-jumping?	Prompt injection inside tool results — treat results as untrusted data	MCPA::D4
 Confused deputy?	Authorized component tricked into misusing authority — per-audience consent/binding	MCPA::D4
@@ -36,7 +43,7 @@ stdio trust boundary?	The local machine; stdio servers shouldn't juggle web toke
 MCP's core value?	Conforming server runs in any MCP host; M×N integrations become M+N	MCPA::D5
 Exam domain weights?	D1 16% · D2 14% · D3 26% · D4 24% · D5 20%	MCPA::Meta
 Spec version the exam aligns to?	Release 2026-07-28 (re-diff before exam day)	MCPA::Meta
-Cert logistics?	Online proctored MCQ; 90 min (🟡120); valid 2 yrs; 12-mo window; 1 retake; money-back	MCPA::Meta
+Cert logistics?	Online proctored MCQ; 90 min per LF page (AAIF says 120); valid 2 yrs; 12-mo window; 1 retake; money-back	MCPA::Meta
 Cancellation mechanics?	notifications/cancelled {requestId} — no ack; late results discarded	MCPA::D3
 listChanged notifications mean?	Cached list is stale — re-call */list (and re-consent if required)	MCPA::D3
-Ping usage?	`ping` request → empty result; liveness either direction	MCPA::D3
+Logging in 2026-07-28?	No logging/setLevel; per-request io.modelcontextprotocol/logLevel in _meta; notifications/message only when requested; feature deprecated	MCPA::D3

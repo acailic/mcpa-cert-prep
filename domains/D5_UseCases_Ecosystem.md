@@ -23,9 +23,12 @@
 
 - **Write once, any host**: a conforming server works in any MCP client (the core value proposition).
 - **Official reference servers** (filesystem, git, fetch, memory…) — community + vendor servers listed in
-  directories/registries (🟡 official MCP Registry in preview since 2025; check current status).
-- **Versioning in practice**: date-based protocol versions + capability negotiation = graceful upgrades;
-  servers/clients degrade to the negotiated common version.
+  directories/registries. The **official Registry (registry.modelcontextprotocol.io) is still in PREVIEW**,
+  run by the modelcontextprotocol project (not AAIF itself) — enterprises build allowlists rather than
+  trusting it blindly.
+- **Versioning in practice**: date-based protocol versions + per-request `_meta` declaration (2026-07-28:
+  stateless — no handshake) = graceful degradation; `server/discover` reveals what a server supports;
+  extensions (e.g. tasks) let servers ship beyond-core features without breaking core clients.
 - **Interoperability** questions compare MCP to alternatives: function/tool calling (vendor-specific,
   in-process), OpenAPI plugins (web-centric), MCP (protocol-level, host-agnostic, cross-vendor).
 

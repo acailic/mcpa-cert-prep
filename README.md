@@ -4,14 +4,21 @@
 > the first official MCP certification. Built by an agent workflow (DeepTutor) and grounded in the
 > MCP specification and the official LF exam page.
 
-> **⭐ Star this repo to get notified** — GA purchase is still "notify me" at LF; when it opens, we
-> ship the full 2×60-question mock-exam bundle within 48h. Join the waitlist → [link at GA launch].
+> **GA is LIVE — $250, enroll today.** The full 2×60-question mock-exam bundle ships this week —
+> join the launch-discount waitlist → [email capture — link added at publish]
 
-## Exam at a glance (official LF page, fetched 2026-09-11)
+## Exam at a glance (official LF page, verified 2026-11-11)
 
-- **5 domains** · online proctored multiple-choice · LF page: **90 min** (🟡 some sources say 120) ·
-  cert valid **2 years** · 12-month eligibility window · **1 retake included** · money-back guarantee
-- Aligned to MCP spec release **2026-07-28**
+- **5 domains** · online proctored multiple-choice · **90 min per the LF cert page** (AAIF
+  announcements say 120 — the LF page is authoritative at purchase; most third-party prep repeats
+  120 unverified) · cert valid **2 years** · 12-month eligibility window · **1 retake included** ·
+  money-back guarantee · **$250**
+- Aligned to MCP spec release **2026-07-28** (no newer release as of 2026-11-11)
+- **2026-07-28 is a fundamental rewrite** — stateless core (no `initialize` handshake, no sessions),
+  MRTR replacing server→client requests, Roots/Sampling/Logging deprecated. Most free tutorials (and
+  much competitor prep) still teach the pre-rewrite protocol. This pack teaches the current spec and
+  flags every legacy mechanic as a distractor.
+- **Every fact ✅-checked against the LF page and the MCP spec — re-verified November 2026, discrepancies disclosed.**
 - Recommended: JSON-RPC basics, hands-on LLM API use, agentic AI concepts, OAuth 2.1 fundamentals
 
 | Domain | Weight | Guide |

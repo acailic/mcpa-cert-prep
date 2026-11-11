@@ -9,9 +9,10 @@
 - Analogy the exam likes: **"USB-C port for AI applications"** — one standardized port for plugging
   tools/data into any model-backed app. ✅
 - Built on **JSON-RPC 2.0** — every MCP message is a JSON-RPC request, response, or notification. ✅
-- Origin & governance: initiated by Anthropic (open-sourced Nov 2024); adopted under neutral stewardship
-  via the Agentic AI Foundation / Linux Foundation (🟡 details moved during 2025–2026 — don't over-study
-  governance history).
+- Origin & governance: initiated by Anthropic (open-sourced Nov 2024); donated to the **Agentic AI
+  Foundation (AAIF)** under the Linux Foundation (Dec 2025) — "a Series of LF Projects, LLC"; neutral
+  stewardship since. 2026-07-28 also added a **feature lifecycle policy** (Active / Deprecated /
+  Removed, ≥12-month deprecation window) — expect governance questions to cite it.
 
 ## What MCP is NOT (classic distractors)
 
@@ -31,9 +32,9 @@
 | **Tools** | model-controlled actions — the LLM decides when to call them |
 | **Resources** | application-controlled data the host/user attaches — read-only context |
 | **Prompts** | user-controlled templates the user explicitly picks |
-| **Sampling** | server asks the *client* to run an LLM completion (server never calls models directly) |
-| **Roots** | client tells the server which filesystem/URI boundaries it may work in |
-| **Elicitation** | server asks the *user* (via client) for structured input mid-flow 🟡 newer spec |
+| **Sampling** | server asks the *client* to run an LLM completion (server never calls models directly) — **deprecated 2026-07-28** |
+| **Roots** | client tells the server which filesystem/URI boundaries it may work in — **deprecated 2026-07-28** |
+| **Elicitation** | server asks the *user* (via client) for structured input mid-flow — since 2026-07-28 delivered via **MRTR**, not a standalone server→client request |
 
 ## Control hierarchy (✅ — classic exam question)
 
@@ -46,19 +47,24 @@
 
 ## Interoperability & versioning
 
-- **Protocol version** is a date string (e.g. `2025-06-18`); negotiated in the `initialize` handshake —
-  client proposes, server responds with the version it supports. ✅
-- **Capability negotiation**: each side declares what it supports (tools, resources, prompts, sampling…)
-  in `initialize`; you only use what was negotiated. ✅
-- MCPA scope is aligned to spec release **2026-07-28** — if you learned MCP pre-2026, re-diff the spec
-  (🟡 changelog is the suspect list: elicitation, tasks, registry updates).
+- **Protocol version** is a date string (e.g. `2026-07-28`). Since the 2026-07-28 rewrite the protocol is
+  **stateless**: there is **no `initialize` handshake** — every request carries its version and the
+  client's capabilities in `_meta` (`io.modelcontextprotocol/protocolVersion`,
+  `io.modelcontextprotocol/clientCapabilities`). Mismatch → `UnsupportedProtocolVersionError`.
+- **Capability declaration**: each side declares what it supports (tools, resources, prompts,
+  extensions…) — per-request in `_meta`; you only use what was declared. **`server/discover`** lets a
+  client learn versions/capabilities/identity up front.
+- MCPA scope is aligned to spec release **2026-07-28** — if you learned MCP pre-2026, re-diff: the
+  changelog (initialize/sessions/ping removed; MRTR added; sampling/roots/logging, HTTP+SSE, and OAuth
+  DCR deprecated; tasks → extension).
 
 ## Interoperability angles the exam tests
 
 - "Write once, run in any MCP host" — servers are host-agnostic; that's the portability pitch. ✅
 - MCP is **transport-agnostic**: same protocol over stdio, Streamable HTTP, (custom) sockets. ✅
-- JSON-RPC 2.0 means: id-less **notifications** (fire-and-forget), id-bearing **requests** (require a
-  response), and **batch** semantics (🟡 batch support changed across spec revisions).
+- JSON-RPC 2.0 means: id-less **notifications** (fire-and-forget) and id-bearing **requests** (require a
+  response). **Batching was removed in 2025-06-18** — an answer proposing batched requests is a
+  pre-2025 distractor.
 
 ## Exam angles (D1)
 

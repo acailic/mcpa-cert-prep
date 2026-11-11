@@ -2,21 +2,21 @@
 
 > ✅ = from the official LF certification page / MCP spec · 🟡 = third-party, verify before exam day.
 
-## Logistics (✅ official LF page, fetched 2026-09-11)
+## Logistics (✅ official LF page, verified 2026-11-11)
 
 | Item | Value |
 |---|---|
 | Exam | Model Context Protocol Associate (**MCPA**) — first official MCP certification |
 | Issuer | Linux Foundation / Agentic AI Foundation (AAIF) |
 | Format | Online, **proctored**, multiple-choice |
-| Duration | **90 min** per LF page (🟡 AAIF launch post says 120 min — check at purchase) |
+| Duration | **90 min per the LF cert page** (✅ verified 2026-11-11). AAIF's July blog and Sept press release say **120 min** — official sources conflict. The LF purchase page is authoritative; most third-party prep repeats 120 without checking. Confirm on your checkout page. |
 | Validity | **2 years** |
 | Eligibility window | 12 months from purchase |
 | Retakes | **1 retake included** |
 | Guarantee | 100% money-back |
 | Level | Beginner (no prerequisites listed) |
-| Availability | GA purchase "notify me" as of 2026-09-11 (beta ran Aug 4–17 2026); conference path −20% via AAIF |
-| Price | 🟡 beta was $99 (GA unknown) |
+| Availability | **GA live since 2026-09-13** — Enroll Today, $250. THRIVE-ONE bundle $495 (−40% multi-cert). Conference path −20% (AGNTCon+MCPCon NA, Oct 2026). Beta ran Aug 4–17 2026. |
+| Price | **$250** (✅ GA; beta was $99) |
 
 ## Recommended prerequisites (✅ LF page)
 
@@ -42,9 +42,13 @@ Spec alignment: release **2026-07-28**.
 
 ## Strategy notes
 
+- **2026-07-28 is a fundamental rewrite** (stateless core, MRTR, deprecations — see the rewrite box in
+  D2/D3). Older tutorials and most competitor prep still teach the pre-rewrite handshake; expect those
+  mechanics to appear as *distractors*. Every guide in this pack is verified against the current spec
+  (changelog re-checked 2026-11-11).
 - 60% of the exam = D3 + D4. These are *behavioral* (message flows, consent, OAuth), not vocabulary —
-  drill the lifecycle and the security traps until boring.
+  drill the flows (MRTR, subscriptions, cancellation) and the security traps until boring.
 - Expect scenario questions: "a client receives X, what happens next?" — learn the message ordering.
 - MCPA is vendor-neutral: questions stay protocol-level (no Anthropic/OpenAI product specifics).
-- Content freeze rule: re-diff the MCP spec `2025-06-18` → `2026-07-28` before exam day (🟡 flagged
-  items in these guides are the suspects).
+- Content freeze rule: re-check for spec releases after `2026-07-28` before exam day (none as of
+  2026-11-11).

@@ -1,9 +1,11 @@
 # Flashcards — rapid Q→A
 
-## Lifecycle
-Q: Correct order after TCP/stdio connect? → A: `initialize` request → server response → `notifications/initialized` → normal traffic.
-Q: What rides in the `initialize` request? → A: `protocolVersion` (date string), `capabilities`, `clientInfo`.
-Q: What does the server's initialize response contain? → A: its `protocolVersion`, `capabilities`, `serverInfo`, optional `instructions`.
+## Lifecycle (stateless — 2026-07-28)
+Q: Is there a handshake in current MCP? → A: **No.** `initialize`/`notifications/initialized` were removed; every request carries `_meta` protocolVersion + clientCapabilities.
+Q: How does a client learn a server's versions/capabilities up front? → A: `server/discover` (servers MUST implement).
+Q: What happens on protocol version mismatch? → A: `UnsupportedProtocolVersionError` (spec code `-32022`).
+Q: What did the 2026-07-28 rewrite remove? → A: sessions/`Mcp-Session-Id`, `initialize` handshake, `ping`, `logging/setLevel`, batching, stream resumability.
+Q: What did it deprecate? → A: Roots, Sampling, Logging features; HTTP+SSE transport; OAuth DCR (≥12-month window).
 
 ## Control ownership
 Q: Tools are controlled by ___? → A: The model (LLM decides when to call).
@@ -19,22 +21,25 @@ Q: Tool failed at runtime (file not found). Error object or…? → A: Successfu
 
 ## Transports
 Q: Two current transports? → A: stdio (local) and Streamable HTTP (remote). HTTP+SSE is deprecated.
-Q: Streamable HTTP = ? → A: HTTP POST client→server + optional SSE stream server→client; session via `Mcp-Session-Id`.
+Q: Streamable HTTP = ? → A: HTTP POST client→server + optional SSE stream server→client; standard headers `Mcp-Method`/`Mcp-Name`; **no sessions, no resumability** — re-issue with new request ID.
 
 ## Tools / Resources / Prompts
 Q: What validates tool arguments? → A: The tool's declared JSON Schema `inputSchema`.
 Q: Name the four tool annotation hints. → A: `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`.
 Q: Are annotations enforceable? → A: No — advisory hints only.
 Q: Resource content types? → A: `text` or `blob` (base64) with `mimeType`.
-Q: Resource subscriptions flow? → A: `resources/subscribe` → `notifications/resources/updated` → client re-reads.
+Q: Resource subscriptions flow (2026-07-28)? → A: `subscriptions/listen` (one long-lived stream; opt-in types) → tagged events → client re-reads. Old `resources/subscribe` = removed.
 Q: What is `completion/complete` for? → A: Autocompleting prompt/resource-template arguments.
 Q: Pagination cursor rules? → A: Opaque — pass back verbatim, never parse or construct.
 
-## Server→client primitives
-Q: Three things clients expose TO servers? → A: Sampling, roots, elicitation handling.
-Q: Sampling flow? → A: `sampling/createMessage` (s→c) → user approval → client's model → completion returned.
-Q: Roots are…? → A: Client-declared URI boundaries; advisory scoping, not sandboxing.
+## Server→client primitives (now MRTR)
+Q: Three things clients expose TO servers? → A: Sampling, roots, elicitation handling — all **deprecated features** in 2026-07-28, delivery via MRTR.
+Q: MRTR flow? → A: Server returns `InputRequiredResult` (`resultType: "input_required"`, `inputRequests`) → client retries same request with `inputResponses`.
+Q: Do servers still send standalone s→c requests (`sampling/createMessage`, `roots/list`, `elicitation/create`)? → A: **No** — replaced by MRTR; those method names are legacy distractors.
+Q: Sampling flow (concept)? → A: Server asks → user approves → client's model runs → completion returned. Client enforces modelPreferences.
+Q: Roots are…? → A: Client-declared URI boundaries; advisory scoping, not sandboxing. Deprecated.
 Q: Elicitation asks ___ ; sampling asks ___ . → A: the user; the model.
+Q: Tasks live where since 2026-07-28? → A: Official extension `io.modelcontextprotocol/tasks` — poll `tasks/get`, input via `tasks/update`, no `tasks/list`, no blocking `tasks/result`.
 
 ## Security
 Q: Token passthrough? → A: Forbidden. Validate audience; server is its own OAuth resource server.
@@ -42,7 +47,7 @@ Q: MCP OAuth profile in 3 words? → A: OAuth 2.1 + mandatory PKCE.
 Q: RFC 9728? → A: Protected Resource Metadata — well-known doc naming the authorization server(s).
 Q: RFC 8707? → A: Resource indicators — `aud`-bind tokens to the specific server.
 Q: Where do tokens never go? → A: URLs/query strings (they get logged); header only.
-Q: Session ID rules? → A: Secure-random, origin/auth-validated per request, expire/rotate.
+Q: Session ID rules? → A: Protocol sessions removed (2026-07-28); harden any server-minted handles the same way: secure-random, origin/auth-validated, expire.
 Q: Rug pull? → A: Tool changed after approval → detect `listChanged`, re-consent.
 Q: Line-jumping? → A: Prompt injection inside tool results → treat results as untrusted data.
 Q: Confused deputy? → A: Authorized component tricked into misusing its authority → per-audience consent/binding.
